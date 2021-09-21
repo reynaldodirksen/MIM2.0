@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Aug 23 11:35:12 2021
+
+@author: pi
+"""
+import RPi.GPIO as GPIO
+from time import sleep
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(12, GPIO.OUT) # sig UV led
+button = 4
+UV =    12
+
+GPIO.setup(4, GPIO.IN)    # sig Switch
+cilinder = 16
+GPIO.setup(cilinder, GPIO.OUT)
+GPIO.setup(UV, GPIO.OUT) # UV LED
+#GPIO.output(cilinder, 1)
+#GPIO.output(UV,True)
+#sleep(20)
+#GPIO.output(UV,False)
+#
+#GPIO.output(cilinder, 0)
+while(1):
+    print(GPIO.input(4))
