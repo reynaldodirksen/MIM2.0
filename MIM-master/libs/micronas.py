@@ -391,7 +391,8 @@ if __name__ == '__main__':
 #    x.isConnected()
 #    x.write_setup(setup)
     while(1):
-         print(x.read_setup())
+#         print(x.read_setup())
+        print(x.read_voltage_out())
     print(x.read_voltage_out())
     print(x.isConnected())
     x.device.close()

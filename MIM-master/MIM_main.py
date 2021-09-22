@@ -44,7 +44,7 @@ cilinder = 16
 button = 4
 LED_GPIO = 21
 
-GPIO.setup(switchHeight, GPIO.IN) # eesx498 1
+GPIO.setup(switchHeight, GPIO.IN, pull_up_down = GPIO.PUD_DOWN) # eesx498 1
 GPIO.setup(23, GPIO.OUT) #dir Mrot
 GPIO.setup(24, GPIO.OUT) #sig Mrot
 GPIO.setup(26, GPIO.IN) # eesx498 1
@@ -185,14 +185,12 @@ class RootWidget(ScreenManager):
         self.stationID = 7
         self.move_hor(0, 'L')
         self.move_vert(0, 'U')
-        #start by setting bit position to zero
-        if GPIO.input(switchHeight):
-            self.move_vert_indefinite('U')
-        else:
-            self.move_vert_indefinite('D')
+#        start by setting bit position to zero
+        self.move_vert_indefinite('D')
+##        
+##    
+#        self.move_vert(100000, 'U')
         
-    
-        self.move_vert(120000, 'D')
         self.move_hor_indefinite('L')
         self.vertsteps = 0
         self.newplate = 0
@@ -284,11 +282,12 @@ class RootWidget(ScreenManager):
             self.totstep = 0
             self.VList = []
             self.step = 3000 
-            self.lastV = 0
             self.ids.progress.text = "setting height"
             #move upwards in steps of 3000
             for i in range(60):
+                
                 self.move_vert(self.step, 'U')
+                sleep(0.05)
                 #track steps
                 self.vertsteps +=self.step
                 self.totstep +=self.step
@@ -302,7 +301,7 @@ class RootWidget(ScreenManager):
                 self.ids.voltage.text = str(Voltage) + 'V'
                 #if our deltaV is small enoough we can move to calculating the bottom of the curve
                 if self.totstep > 20000:
-                    if self.oldV-Voltage < 0.02 and Voltage < 1.6:
+                    if self.oldV-Voltage < 0.02 and Voltage < 2:
                         break
                 self.oldV = Voltage
                 #voltage too low means we cannot reach the perfect height 
@@ -314,7 +313,6 @@ class RootWidget(ScreenManager):
                 self.error(self.myError)
             elif Voltage < 0.08:
                 self.myError = "Height error: Voltage under 0V"
-                print('aaaa')
                 self.error(self.myError)
             else:
                 self.main(3)
@@ -324,6 +322,7 @@ class RootWidget(ScreenManager):
             self.oldV = self.micronas.read_voltage_out()
             Voltage = self.oldV
             for i in range(100):
+                
                 #use np arrays and calculations to determine the curve and minimum points
                 x = np.array(self.stepList[-10:])
                 y = np.array(self.VList[-10:])
@@ -338,7 +337,7 @@ class RootWidget(ScreenManager):
                 minsteps = -(b/(2*a))
                 deltastep = minsteps-self.totstep
                 #if we are within 150 steps of minimum, we are good enough
-                if deltastep < 150:
+                if deltastep < 6000:
                     break
                 else:
                 #if we arent within 150 steps, move vert steps/2 if it would be less than 1500 steps, else we move 1500 steps
@@ -362,6 +361,7 @@ class RootWidget(ScreenManager):
                 self.myError = 'mag too close'
                 self.error(self.myError)
             else:
+                self.move_vert(300, 'D')
                 self.main(5)
             
         #we skip this in the MIM
@@ -369,14 +369,18 @@ class RootWidget(ScreenManager):
             Voltage = self.micronas.read_voltage_out_times(5)
             if Voltage > 1.6:
                 for i in range(500):
+                    
                     self.move_hor(50, 'L')
+                    sleep(0.05)
                     Voltage = self.micronas.read_voltage_out()
                     if Voltage < 1.6:
                         break
             
             elif Voltage < 1.4:
                 for i in range(500):
+                    
                     self.move_hor(50, 'R')
+                    sleep(0.05)
                     Voltage = self.micronas.read_voltage_out()
                     if Voltage > 1.4:
                         break
@@ -388,7 +392,9 @@ class RootWidget(ScreenManager):
             self.micronas.write_setup(self.setup)
             self.ids.progress.text = "setting magnet to 4V"
             for i in range(1000):
+                
                 self.move_hor(50, 'R')
+                sleep(0.05)
                 Voltage = self.micronas.read_voltage_out()
                 self.ids.voltage.text = str(Voltage)+ 'V'
                 if Voltage > 3.8:
@@ -399,7 +405,9 @@ class RootWidget(ScreenManager):
         elif state == 6:
             self.ids.progress.text = "setting magnet to 3.5V"
             for i in range(1000):
+                
                 self.move_hor(100, 'L')
+                sleep(0.05)
                 Voltage = self.micronas.read_voltage_out()
                 self.ids.voltage.text = str(Voltage)+ 'V'
                 if Voltage < 3.5:
@@ -412,7 +420,9 @@ class RootWidget(ScreenManager):
         elif state == 7:
             self.ids.progress.text = "setting magnet to 1.5V"
             for i in range(1000):
+                
                 self.move_hor(50, 'L')
+                sleep(0.05)
                 self.steps +=50
                 Voltage = self.micronas.read_voltage_out()
                 self.ids.voltage.text = str(Voltage)+ 'V'
@@ -436,23 +446,29 @@ class RootWidget(ScreenManager):
             self.newVoltage = 2.5+((self.V15-2.5)*(((self.MR0)/(self.mrange))))
             if self.newVoltage <0.8:
                 for i in range(1000):
+                    
                     self.move_hor(50, 'R')
+                    sleep(0.05)
                     Voltage = self.micronas.read_voltage_out()
                     self.ids.voltage.text = str(Voltage)    + 'V'
                     if Voltage <0.5:
                         break
             
                 for i in range(1000):
+                    
                     self.move_hor(10, 'R')
-                    Voltage = self.micronas.read_voltage_out_times(3)
+                    sleep(0.05)
+                    Voltage = self.micronas.read_voltage_out()
                     self.ids.voltage.text = str(Voltage)    + 'V'
                     if Voltage > 0.2:
                         break
             for i in range(1000):
+                
                 self.move_hor(5, 'R')
-                Voltage = self.micronas.read_voltage_out_times(3)
+                sleep(0.05)
+                Voltage = self.micronas.read_voltage_out()
                 self.ids.voltage.text = str(Voltage)    + 'V'
-                if Voltage > 0.80*self.ZTVw:
+                if Voltage > 1.1*self.ZTVw:
                     break
             self.main(9)
         #display end results
@@ -461,7 +477,6 @@ class RootWidget(ScreenManager):
             for i in range(100):
                 GPIO.input(button)
             self.setup = self.micronas.read_setup()
-            print(self.setup)
             #read ZTV and calculate sensitivity
             self.ZTV = round(self.micronas.read_voltage_out(), 2)
             self.sens = round(self.sens*self.sensw, 2)
@@ -483,18 +498,21 @@ class RootWidget(ScreenManager):
                 self.main(10)
         #turn on UV for 10 seconds and let the pressure valve go
         elif state == 10:
+            self.move_hor(50, 'L')
+
             GPIO.output(UV, 1)
             sleep(10)
             GPIO.output(UV, 0)
+            self.move_vert(30000, 'D')
             self.ids.progress.text = "Positioning completed"
             GPIO.output(cilinder, 0)
             #wait until the cable to the sensor is removed
             while(self.micronas.read_id() != "0000 0000"):
-                a=2
+                self.ids.voltage.text = "ZTV: " + str(self.micronas.read_voltage_out()) + "V"
+                sleep(0.1)
             sleep(10)
             #10 seconds after removing the cable, reset height
             self.reset_height()
-            
             
             
     def checkErrors(self, state):
@@ -524,7 +542,7 @@ class RootWidget(ScreenManager):
         sleep(1)
         self.move_hor(5000, 'L')
         sleep(1)
-        self.move_hor(2000, 'R')
+        self.move_hor(2500, 'R')
 #        sleep(1)
 #        self.lastVoltage = 5
 #        self.count = 0
@@ -590,13 +608,11 @@ class RootWidget(ScreenManager):
         global vert_var
         vert_var= True
         self.finished = True
-        if GPIO.input(switchHeight):
-            self.move_vert_indefinite('U')
-        else:
-            self.move_vert_indefinite('D')
+        self.move_vert_indefinite('D')
         
         
-        self.move_vert(120000, 'D')
+        for i in range(100):
+            GPIO.input(button)
         self.vertsteps = 0
         self.move_hor_indefinite('L')
         self.ids.progress.text = "Connect next sensor and press start button"
@@ -665,11 +681,17 @@ class RootWidget(ScreenManager):
         
     def move_vert_indefinite(self, direction):
         pauze = 0.000001
+        counter = 0
         global vert_var
         GPIO.output(15, True)
         if direction == 'U':
             GPIO.output(9, True)
-            while(GPIO.input(switchHeight)):
+            while(1):
+                var = (GPIO.input(switchHeight))
+                if var == 0:
+                    counter +=1
+                if counter >= 5:
+                    break
                 GPIO.output(27, True)
                 sleep(pauze)
                 GPIO.output(27, False)
@@ -677,7 +699,12 @@ class RootWidget(ScreenManager):
             
         elif direction == 'D':
             GPIO.output(9, False)
-            while((GPIO.input(switchHeight)) == False):
+            while(1):
+                var = GPIO.input(switchHeight)
+                if var == 1:
+                    counter +=1
+                if counter >= 5:
+                    break
                 GPIO.output(27, True)
                 sleep(pauze)
                 GPIO.output(27, False)
@@ -690,7 +717,7 @@ class RootWidget(ScreenManager):
     
     #when button gets pressed to start main
     def button_callback(self, channel):
-        for i in range(1000):
+        for i in range(10):
             GPIO.input(button)
         if self.ids.reset.disabled == True:
             return

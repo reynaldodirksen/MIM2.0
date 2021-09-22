@@ -11,7 +11,7 @@ mycursor = mydb.cursor()
 
 def returnOrders():
     
-    mycursor.execute('SELECT  `Name` FROM `Orders` WHERE state = 3 ORDER BY `Orders`.`Name` ASC')
+    mycursor.execute('SELECT  `Name` FROM `Orders` WHERE state = 1 ORDER BY `Orders`.`Name` ASC')
     myresult = mycursor.fetchall()
     MO = [0 for i in range(len(myresult))]
     for i in range(len(myresult)):

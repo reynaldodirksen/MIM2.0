@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Sep 22 15:13:01 2021
+
+@author: pi
+"""
+
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+SWITCH_GPIO1 = 26
+switchHeight = 13
+SWITCH_GPIO2 = 19
+cilinder = 16
+button = 4
+LED_GPIO = 21
+from time import sleep
+GPIO.setup(switchHeight, GPIO.IN, pull_up_down = GPIO.PUD_DOWN) # eesx498 1
+GPIO.setup(23, GPIO.OUT) #dir Mrot
+GPIO.setup(24, GPIO.OUT) #sig Mrot
+GPIO.setup(26, GPIO.IN) # eesx498 1
+GPIO.setup(9, GPIO.OUT) #dir Mheight
+GPIO.setup(27, GPIO.OUT) #sig Mheight
+GPIO.setup(19,  GPIO.IN)# eesx498 2
+GPIO.setup(21, GPIO.OUT) # sig UV led
+#GPIO.setup(16, GPIO.OUT) # sig cilinder
+GPIO.setup(4, GPIO.IN)    # sig Switch
+GPIO.setup(14, GPIO.OUT) # EnMrot
+GPIO.setup(15, GPIO.OUT) # EnMheight
+GPIO.setup(cilinder, GPIO.OUT)
+
+SWITCH_GPIO1 = 26
+switchHeight = 13
+SWITCH_GPIO2 = 19
+
+GPIO.setup(switchHeight, GPIO.IN, pull_up_down = GPIO.PUD_DOWN) 
+def move_vert_indefinite( direction):
+        pauze = 0.000001
+        counter = 0
+        global vert_var
+        GPIO.output(15, True)
+        if direction == 'U':
+            GPIO.output(9, True)
+            while(1):
+                var = (GPIO.input(switchHeight))
+                if var == 0:
+                    counter +=1
+                print(counter)
+                if counter >= 5:
+                    break
+                GPIO.output(27, True)
+                sleep(pauze)
+                GPIO.output(27, False)
+                sleep(pauze)
+            
+        elif direction == 'D':
+            GPIO.output(9, False)
+            while(1):
+                var = GPIO.input(switchHeight)
+                if var == 1:
+                    counter +=1
+                print(counter)
+                if counter >= 5:
+                    break
+                GPIO.output(27, True)
+                sleep(pauze)
+                GPIO.output(27, False)
+                sleep(pauze)
+
+while(1):
+    print(GPIO.input(switchHeight))
+    sleep(0.2)
